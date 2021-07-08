@@ -1,6 +1,8 @@
 import time
 import Adafruit_PCA9685
 
+class ServoControllerFinishedMovementException(Exception):
+    pass
 
 class ServoController:
     
@@ -63,6 +65,7 @@ class ServoController:
                 time.sleep(.001)
         
         self.current_angle = degree
+        raise ServoControllerFinishedMovementException(f"Finished Movement for servo at channel {self.channel} with goal of {degree} degrees.")
 
         
     
@@ -107,10 +110,3 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             controller.perform_homing()
             break
-
-    
-
-        
-        
-
-    # controller.run()#
