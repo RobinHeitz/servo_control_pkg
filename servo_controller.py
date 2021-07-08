@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#-*- coding:UTF-8 -*-(add)
+
 import time
 import Adafruit_PCA9685
 
@@ -65,7 +68,7 @@ class ServoController:
                 time.sleep(.001)
         
         self.current_angle = degree
-        raise ServoControllerFinishedMovementException(f"Finished Movement for servo at channel {self.channel} with goal of {degree} degrees.")
+        raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, degree))
 
         
     
@@ -91,7 +94,14 @@ class ServoController:
 
 if __name__ == "__main__":
     controller = ServoController(channel=0)
-    # controller.run()
+
+    def switch_channel():
+        value = input("Which servo do you want to choose? Pick between 0,1 and 7\n")
+        servo = int(value)
+        if servo in [0,1,7]:
+            controller.channel = servo
+
+
 
     while True:
         try:
@@ -99,12 +109,18 @@ if __name__ == "__main__":
             angle = int(value)
 
             controller.move_servo_to_degree(angle)
+        
+        except ServoControllerFinishedMovementException as e:
+            print(e)
+
+        except NameError:
+           switch_channel()
 
         except ValueError:
-            value = input("Which servo do you want to choose? Pick between 0,1 and 7\n")
-            servo = int(value)
-            if servo in [0,1,7]:
-                controller.channel = servo
+           switch_channel()
+
+
+
 
 
         except KeyboardInterrupt:
