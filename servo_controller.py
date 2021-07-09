@@ -21,8 +21,7 @@ class ServoController:
 
     """
 
-    def __init__(self, channel=7, frequency=50, homing_angle=90):
-        self.channel = channel
+    def __init__(self, frequency=50, homing_angle=90):
         self.frequency = frequency
         self.homing_angle = homing_angle
         self.current_angle = self.homing_angle
@@ -41,11 +40,11 @@ class ServoController:
         return lower_bound + (upper_bound - lower_bound)*degree/180 
 
     
-    def move_servo_to_degree(self, goal_degree):
+    def move_servo_to_degree(self, goal_degree, channel):
 
-        def _set_pwm(angle):
+        def _set_pwm(angle, channel):
             self.pwm.set_pwm(
-                    self.channel,
+                    channel,
                     0,
                     int(4096*self.frequency * self.get_signal_length_for_degree(angle))
                 )
@@ -63,38 +62,22 @@ class ServoController:
 
             while cur_angle <= goal_degree:
                 cur_angle += increment
-                _set_pwm(cur_angle)
+                _set_pwm(cur_angle, channel)
         else:
             #move in negative angle direction
             while cur_angle >= goal_degree:
                 cur_angle -= increment
-                _set_pwm(cur_angle)
+                _set_pwm(cur_angle, channel)
         
 
         self.current_angle = cur_angle
-        raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, self.current_angle))
+        raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(channel, self.current_angle))
 
         
     
     def perform_homing(self):
         self.move_servo_to_degree(self.homing_angle)
     
-    
-    def run(self):
-        self.move_servo_to_degree(0,self.channel)
-
-        time.sleep(3)
-
-        desired_angle = 180
-        steps_per_degree = 4 
-
-        for i in range(desired_angle * steps_per_degree + 1):
-            self.move_servo_to_degree(i/steps_per_degree,self.channel)
-            time.sleep(.001)
-
-
-
-
 
 if __name__ == "__main__":
     controller = ServoController(channel=0)
