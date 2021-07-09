@@ -42,12 +42,19 @@ class ServoController:
 
     
     def move_servo_to_degree(self, goal_degree):
+
+        def _set_pwm(angle):
+            self.pwm.set_pwm(
+                    self.channel,
+                    0,
+                    int(4096*self.frequency * self.get_signal_length_for_degree(angle))
+                )
+            time.sleep(.01)
+
+
         if goal_degree == self.current_angle: return
 
-        # delta = abs(self.current_angle - degree)
-        steps_per_degree = 6
-
-        increment = 0.1
+        increment = 0.4
         cur_angle = self.current_angle
 
 
@@ -56,28 +63,16 @@ class ServoController:
 
             while cur_angle <= goal_degree:
                 cur_angle += increment
-                self.pwm.set_pwm(
-                    self.channel,
-                    0,
-                    int(4096*self.frequency * self.get_signal_length_for_degree(cur_angle))
-                )
-                
-                time.sleep(.001)
-
-
+                _set_pwm(cur_angle)
         else:
             #move in negative angle direction
             while cur_angle >= goal_degree:
                 cur_angle -= increment
-                self.pwm.set_pwm(
-                    self.channel,
-                    0,
-                    int(4096*self.frequency * self.get_signal_length_for_degree(cur_angle))
-                )
-                time.sleep(.001)
+                _set_pwm(cur_angle)
         
+
         self.current_angle = cur_angle
-        # raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, self.current_angle))
+        raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, self.current_angle))
 
         
     
