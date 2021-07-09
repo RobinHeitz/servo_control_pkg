@@ -41,34 +41,43 @@ class ServoController:
         return lower_bound + (upper_bound - lower_bound)*degree/180 
 
     
-    def move_servo_to_degree(self, degree):
-        if degree == self.current_angle: return
+    def move_servo_to_degree(self, goal_degree):
+        if goal_degree == self.current_angle: return
 
-        delta = abs(self.current_angle - degree)
+        # delta = abs(self.current_angle - degree)
         steps_per_degree = 6
 
+        increment = 0.1
+        cur_angle = self.current_angle
 
-        if degree > self.current_angle:
+
+        if goal_degree > self.current_angle:
             #move in positive angle direction
-            for i in range(self.current_angle*steps_per_degree, degree*steps_per_degree+1):
+
+            while cur_angle <= goal_degree:
+                cur_angle += increment
                 self.pwm.set_pwm(
                     self.channel,
                     0,
-                    int(4096*self.frequency * self.get_signal_length_for_degree(i/steps_per_degree))
+                    int(4096*self.frequency * self.get_signal_length_for_degree(cur_angle))
                 )
+                
                 time.sleep(.001)
+
+
         else:
             #move in negative angle direction
-            for i in range(self.current_angle*steps_per_degree, degree*steps_per_degree, -1):
+            while cur_angle >= goal_degree:
+                cur_angle -= increment
                 self.pwm.set_pwm(
                     self.channel,
                     0,
-                    int(4096*self.frequency * self.get_signal_length_for_degree(i/steps_per_degree))
+                    int(4096*self.frequency * self.get_signal_length_for_degree(cur_angle))
                 )
                 time.sleep(.001)
         
-        self.current_angle = degree
-        raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, degree))
+        self.current_angle = cur_angle
+        # raise ServoControllerFinishedMovementException("Finished Movement for servo at channel {} with goal of {} degrees.".format(self.channel, self.current_angle))
 
         
     
